@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: sbt
+
+      - uses: sbt/setup-sbt@v1
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasmtime,wac
+
+      - name: Test
+        run: sbt scalajs-env-wasmtime/test
+
+      - name: Run test-project demo
+        run: sbt test-project/run

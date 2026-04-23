@@ -1,0 +1,8 @@
+.bsp
+.idea
+.metals
+.scala-build
+target
+project/project
+project/target
+scripts/scalafmt

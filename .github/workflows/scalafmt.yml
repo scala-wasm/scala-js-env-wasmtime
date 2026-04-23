@@ -1,0 +1,20 @@
+name: Scalafmt CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: coursier/setup-action@v1
+        with:
+          jvm: temurin:1.21
+          apps: sbt
+      - name: scalafmt
+        run: cs launch --java-opt -Xss8M scalafmt:3.11.0 -- --test
