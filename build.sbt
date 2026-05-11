@@ -2,11 +2,14 @@ import org.scalajs.linker.interface.ModuleKind
 import org.scalajs.sbtplugin.ScalaJSPlugin
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
+val Scala212 = "2.12.21"
+val Scala3 = "3.8.3"
+
 inThisBuild(
   Seq(
     organization := "io.github.scala-wasm",
-    scalaVersion := "2.12.21",
-    scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings"),
+    scalaVersion := Scala212,
+    crossScalaVersions := Seq(Scala212, Scala3),
     versionScheme := Some("semver-spec"),
     homepage := Some(url("https://github.com/scala-wasm/scala-js-env-wasmtime")),
     licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
@@ -31,6 +34,7 @@ inThisBuild(
 )
 
 val commonSettings = Def.settings(
+  scalacOptions ++= Seq("-deprecation", "-feature", "-Werror"),
   apiURL := {
     val name = moduleName.value
     val v = version.value
@@ -44,6 +48,7 @@ lazy val root = project
   .in(file("."))
   .aggregate(`scalajs-env-wasmtime`, `wasmtime-test-rpc-adapter`, `test-project`)
   .settings(
+    scalacOptions ++= Seq("-deprecation", "-feature", "-Werror"),
     publish / skip := true
   )
 
@@ -86,6 +91,8 @@ lazy val `wasmtime-test-rpc-adapter` = project
   .settings(
     commonSettings,
     name := "wasmtime-test-rpc-adapter",
+    scalaVersion := Scala212,
+    crossScalaVersions := Seq(Scala212),
     publish / skip := true,
     Test / test := {},
     scalaJSUseMainModuleInitializer := false,
@@ -106,8 +113,10 @@ lazy val `test-project` = project
   .in(file("test-project"))
   .enablePlugins(ScalaJSPlugin)
   .settings(
+    commonSettings,
     publish / skip := true,
     name := "scalajs-env-wasmtime-test-project",
+    crossScalaVersions := Seq(Scala212),
     Test / test := {},
     scalaJSUseMainModuleInitializer := true,
     scalaJSWitDirectory := baseDirectory.value / "wit",

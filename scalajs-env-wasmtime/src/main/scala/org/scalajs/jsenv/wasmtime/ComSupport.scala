@@ -30,10 +30,10 @@ private final class ComRun(run: JSRun, handleMessage: String => Unit, serverSock
   import ComRun._
 
   /** Promise that completes once the receiver thread is completed. */
-  private[this] val promise = Promise[Unit]()
+  private val promise = Promise[Unit]()
 
   @volatile
-  private[this] var state: State = AwaitingConnection(Nil)
+  private var state: State = AwaitingConnection(Nil)
 
   // If the run completes, make sure we also complete.
   run.future.onComplete {
@@ -41,7 +41,7 @@ private final class ComRun(run: JSRun, handleMessage: String => Unit, serverSock
     case Success(_) => onJSTerminated()
   }
 
-  private[this] val receiver = new Thread {
+  private val receiver = new Thread {
     setName("ComRun receiver")
 
     override def run(): Unit = {

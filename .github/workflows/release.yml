@@ -36,7 +36,7 @@ jobs:
           wit-bindgen --version
 
       - name: Test
-        run: sbt scalajs-env-wasmtime/test test-project/run
+        run: sbt +scalajs-env-wasmtime/test +test-project/run
 
       - name: Publish
         run: sbt ci-release
