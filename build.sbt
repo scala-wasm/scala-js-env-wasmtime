@@ -2,17 +2,22 @@ import org.scalajs.linker.interface.ModuleKind
 import org.scalajs.sbtplugin.ScalaJSPlugin
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
-val JsEnvsVersion = "1.5.0+3-1bf7184b-SNAPSHOT"
-
 inThisBuild(
   Seq(
     organization := "io.github.scala-wasm",
-    version := "0.1.0-SNAPSHOT",
     scalaVersion := "2.12.21",
     scalacOptions ++= Seq("-deprecation", "-feature", "-Xfatal-warnings"),
     versionScheme := Some("semver-spec"),
     homepage := Some(url("https://github.com/scala-wasm/scala-js-env-wasmtime")),
     licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
+    developers := List(
+      Developer(
+        "tanishiking",
+        "Rikito Taniguchi",
+        "tanishiking@users.noreply.github.com",
+        url("https://github.com/tanishiking")
+      )
+    ),
     scmInfo := Some(
       ScmInfo(
         url("https://github.com/scala-wasm/scala-js-env-wasmtime"),
@@ -32,15 +37,6 @@ val commonSettings = Def.settings(
     Some(url(s"https://www.scala-js.org/api/$name/$v/"))
   },
   autoAPIMappings := true,
-  pomExtra := (
-    <developers>
-      <developer>
-        <id>tanishiking</id>
-        <name>Rikito Taniguchi</name>
-        <url>https://github.com/tanishiking</url>
-      </developer>
-    </developers>
-  ),
   pomIncludeRepository := { _ => false }
 )
 
@@ -57,7 +53,7 @@ lazy val `scalajs-env-wasmtime` = project
     commonSettings,
     name := "scalajs-env-wasmtime",
     libraryDependencies ++= Seq(
-      "org.scala-js" %% "scalajs-js-envs" % JsEnvsVersion,
+      "org.scala-js" %% "scalajs-js-envs" % "1.6.0",
       "junit" % "junit" % "4.13.2" % Test,
       "com.novocode" % "junit-interface" % "0.11" % Test
     ),
