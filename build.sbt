@@ -1,4 +1,8 @@
+import org.scalajs.ir.WitScope
+import org.scalajs.linker.interface.ESVersion
 import org.scalajs.linker.interface.ModuleKind
+import org.scalajs.linker.interface.WasmComponentModuleInitializerExport
+import org.scalajs.linker.interface.WasmComponentModuleInitializerExport._
 import org.scalajs.sbtplugin.ScalaJSPlugin
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
@@ -99,11 +103,8 @@ lazy val `wasmtime-test-rpc-adapter` = project
     scalaJSWitDirectory := baseDirectory.value / "wit",
     scalaJSWitWorld := Some("test-rpc-adapter"),
     scalaJSLinkerConfig ~= { config =>
-      val witDir = file("wasmtime-test-rpc-adapter/wit").getAbsolutePath
       config
-        .withExperimentalUseWebAssembly(true)
-        .withWasmFeatures(_.withWitDirectory(Some(witDir)))
-        .withWasmFeatures(_.withWitWorld(Some("test-rpc-adapter")))
+        .withESFeatures(_.withESVersion(ESVersion.ES2022).withUseWebAssembly(true))
         .withModuleKind(ModuleKind.WasmComponent)
     },
     Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "adapter-fastopt"
@@ -111,25 +112,43 @@ lazy val `wasmtime-test-rpc-adapter` = project
 
 lazy val `test-project` = project
   .in(file("test-project"))
-  .enablePlugins(ScalaJSPlugin)
+  .enablePlugins(ScalaJSPlugin, ScalaJSJUnitPlugin)
   .settings(
     commonSettings,
     publish / skip := true,
     name := "scalajs-env-wasmtime-test-project",
     crossScalaVersions := Seq(Scala212),
-    Test / test := {},
     scalaJSUseMainModuleInitializer := true,
     scalaJSWitDirectory := baseDirectory.value / "wit",
     scalaJSWitWorld := Some("testproject"),
     scalaJSLinkerConfig ~= { config =>
-      val witDir = file("test-project/wit").getAbsolutePath
       config
-        .withExperimentalUseWebAssembly(true)
+        .withESFeatures(_.withESVersion(ESVersion.ES2022).withUseWebAssembly(true))
         .withModuleKind(ModuleKind.WasmComponent)
-        .withWasmFeatures(_.withWitDirectory(Some(witDir)))
-        .withWasmFeatures(_.withWitWorld(Some("testproject")))
+        .withWasmFeatures(
+          _.withModuleInitializerExport(
+            Some(
+              WasmComponentModuleInitializerExport(
+                scope = WitScope.Interface("wasi", "cli", "run", Some("0.2.0")),
+                functionName = "run",
+                resultType = ResultType.ResultUnitUnit
+              )
+            )
+          )
+        )
     },
-    jsEnv := new org.scalajs.jsenv.wasmtime.WasmtimeEnv(),
+    jsEnv := new org.scalajs.jsenv.wasmtime.WasmtimeEnv(
+      org.scalajs.jsenv.wasmtime.WasmtimeEnv
+        .Config()
+        .withArgs(
+          List(
+            "-W",
+            "gc,function-references,exceptions",
+            "-S",
+            "cli,inherit-env,inherit-network,tcp"
+          )
+        )
+    ),
     Compile / jsEnvInput := {
       (Compile / fastLinkJS).value
       val linkerOutputDir =

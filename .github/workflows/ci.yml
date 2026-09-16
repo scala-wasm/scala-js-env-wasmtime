@@ -23,18 +23,21 @@ jobs:
         with:
           tool: wasmtime,wac-cli,wasm-tools
 
-      - name: Install wit-bindgen
-        run: cargo install --git https://github.com/scala-wasm/wit-bindgen --branch scala
+      - name: Install wit-bindgen-scala
+        run: cargo install wit-bindgen-scala --version 0.1.0
 
       - name: Check tool versions
         run: |
           wasmtime --version
           wac --version
           wasm-tools --version
-          wit-bindgen --version
+          wit-bindgen-scala --version
 
       - name: Test
         run: sbt +scalajs-env-wasmtime/test
 
       - name: Run test-project demo
         run: sbt +test-project/run
+
+      - name: Run test-project tests
+        run: sbt +test-project/test

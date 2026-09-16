@@ -13,7 +13,6 @@
 package org.scalajs.jsenv.wasmtime.adapter
 
 import java.nio.ByteBuffer
-import java.util.Optional
 
 import scala.scalajs.wasi.cli.environment
 import scala.scalajs.wasi.io.streams.{InputStream, OutputStream, StreamError}
@@ -25,18 +24,6 @@ import scala.scalajs.wit.annotation._
 import scala.scalajs.wit.{Err, Ok, Tuple2}
 import scala.scalajs.wit.unsigned.{UByte, UShort}
 
-@WitExportInterface
-trait Rpc {
-  @WitExport("scalajs:test-rpc/rpc", "init")
-  def init(): Unit
-
-  @WitExport("scalajs:test-rpc/rpc", "send")
-  def send(msg: String): Unit
-
-  @WitExport("scalajs:test-rpc/rpc", "poll")
-  def poll(): Optional[String]
-}
-
 private object TestRpcTransport {
   private object Protocol {
     final val RpcHostEnv = "SCALAJS_TEST_RPC_HOST"
@@ -44,8 +31,8 @@ private object TestRpcTransport {
   }
 
   // TODO(nit): initialize with null instead of optional
-  private[this] var inputStream: Option[InputStream] = None
-  private[this] var outputStream: Option[OutputStream] = None
+  private[this] var inputStream: scala.Option[InputStream] = None
+  private[this] var outputStream: scala.Option[OutputStream] = None
 
   private[this] val envVars: Map[String, String] =
     environment.getEnvironment().iterator.map(e => e._1 -> e._2).toMap
@@ -108,14 +95,14 @@ private object TestRpcTransport {
     writeAll(out, payload.array())
   }
 
-  def poll(): Optional[String] = {
+  def poll(): scala.scalajs.wit.Option[String] = {
     val in = currentInputStream()
-    val message: Optional[String] = {
+    val message: scala.scalajs.wit.Option[String] = {
       readNBytes(in, 4) match {
-        case None =>
-          Optional.empty()
+        case scala.None =>
+          scala.scalajs.wit.None
 
-        case Some(headerBytes) =>
+        case scala.Some(headerBytes) =>
           val msgLen = ByteBuffer.wrap(headerBytes).getInt()
           val payload = readNBytes(in, msgLen * 2).getOrElse {
             throw new IllegalStateException("Unexpected EOF while reading framed payload")
@@ -129,7 +116,7 @@ private object TestRpcTransport {
             i += 1
           }
 
-          Optional.of(String.valueOf(chars))
+          scala.scalajs.wit.Some(String.valueOf(chars))
       }
     }
 
@@ -165,7 +152,7 @@ private object TestRpcTransport {
     throw new AssertionError("unreachable")
   }
 
-  private def readNBytes(in: InputStream, len: Int): Option[Array[Byte]] = {
+  private def readNBytes(in: InputStream, len: Int): scala.Option[Array[Byte]] = {
     val result = new Array[Byte](len)
     var offset = 0
 
@@ -174,7 +161,7 @@ private object TestRpcTransport {
         case ok: Ok[Array[Byte]] =>
           ok.value
         case err: Err[StreamError] if err.value == StreamError.Closed =>
-          if (offset == 0) return None
+          if (offset == 0) return scala.None
           else throw new IllegalStateException(s"Unexpected EOF after $offset/$len bytes")
         case err: Err[_] =>
           err.value match {
@@ -187,7 +174,7 @@ private object TestRpcTransport {
       offset += chunk.length
     }
 
-    Some(result)
+    scala.Some(result)
   }
 
   private def writeAll(out: OutputStream, bytes: Array[Byte]): Unit = {
@@ -222,14 +209,16 @@ private object TestRpcTransport {
 
 }
 
-@WitImplementation
-object TestRpcAdapter extends Rpc {
-  override def init(): Unit =
+object TestRpcAdapter {
+  @WitExport(WitScope.unversioned("scalajs", "test-rpc", "rpc"), "init")
+  def init(): Unit =
     TestRpcTransport.init()
 
-  override def send(msg: String): Unit =
+  @WitExport(WitScope.unversioned("scalajs", "test-rpc", "rpc"), "send")
+  def send(@WitName("msg") msg: String): Unit =
     TestRpcTransport.send(msg)
 
-  override def poll(): Optional[String] =
+  @WitExport(WitScope.unversioned("scalajs", "test-rpc", "rpc"), "poll")
+  def poll(): scala.scalajs.wit.Option[String] =
     TestRpcTransport.poll()
 }
