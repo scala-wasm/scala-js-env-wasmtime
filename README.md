@@ -2,7 +2,11 @@
 
 `scalajs-env-wasmtime` is a standalone Wasm environment for Scala.js (a `JSEnv`) running [wasmtime](https://wasmtime.dev/).
 
-This repository contains `scalajs-env-wasmtime` and keeps the test RPC adapter (`wasmtime-test-rpc-adapter`) as an internal build-only subproject.
+This repository contains:
+
+- `scalajs-env-wasmtime-input`: the Wasm component `Input` type
+- `scalajs-env-wasmtime`: the `WasmtimeEnv` `JSEnv` implementation
+- `wasmtime-test-rpc-adapter`: an internal build-only subproject for the test RPC bridge
 
 ## Prequirements
 

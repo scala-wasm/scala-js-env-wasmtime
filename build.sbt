@@ -50,19 +50,33 @@ val commonSettings = Def.settings(
 
 lazy val root = project
   .in(file("."))
-  .aggregate(`scalajs-env-wasmtime`, `wasmtime-test-rpc-adapter`, `test-project`)
+  .aggregate(
+    `scalajs-env-wasmtime-input`,
+    `scalajs-env-wasmtime`,
+    `wasmtime-test-rpc-adapter`,
+    `test-project`
+  )
   .settings(
     scalacOptions ++= Seq("-deprecation", "-feature", "-Werror"),
     publish / skip := true
   )
 
+lazy val `scalajs-env-wasmtime-input` = project
+  .in(file("scalajs-env-wasmtime-input"))
+  .settings(
+    commonSettings,
+    name := "scalajs-env-wasmtime-input",
+    libraryDependencies +=
+      "org.scala-js" %% "scalajs-js-envs" % "1.6.0"
+  )
+
 lazy val `scalajs-env-wasmtime` = project
   .in(file("scalajs-env-wasmtime"))
+  .dependsOn(`scalajs-env-wasmtime-input`)
   .settings(
     commonSettings,
     name := "scalajs-env-wasmtime",
     libraryDependencies ++= Seq(
-      "org.scala-js" %% "scalajs-js-envs" % "1.6.0",
       "junit" % "junit" % "4.13.2" % Test,
       "com.novocode" % "junit-interface" % "0.11" % Test
     ),
