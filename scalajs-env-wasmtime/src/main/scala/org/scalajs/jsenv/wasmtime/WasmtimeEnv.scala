@@ -85,7 +85,13 @@ object WasmtimeEnv {
     private def this() = {
       this(
         executable = "wasmtime",
-        args = List("-W", "gc,function-references,exceptions"),
+        args = List(
+          "run",
+          "-W",
+          "gc,function-references,exceptions",
+          "-S",
+          "cli,inherit-env,inherit-network,tcp"
+        ),
         env = Map.empty
       )
     }
