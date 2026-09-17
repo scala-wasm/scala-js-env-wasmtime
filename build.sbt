@@ -151,18 +151,7 @@ lazy val `test-project` = project
           )
         )
     },
-    jsEnv := new org.scalajs.jsenv.wasmtime.WasmtimeEnv(
-      org.scalajs.jsenv.wasmtime.WasmtimeEnv
-        .Config()
-        .withArgs(
-          List(
-            "-W",
-            "gc,function-references,exceptions",
-            "-S",
-            "cli,inherit-env,inherit-network,tcp"
-          )
-        )
-    ),
+    jsEnv := new org.scalajs.jsenv.wasmtime.WasmtimeEnv(),
     Compile / jsEnvInput := {
       (Compile / fastLinkJS).value
       val linkerOutputDir =

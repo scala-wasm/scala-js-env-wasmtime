@@ -89,7 +89,7 @@ object WasmtimeEnv {
           "-W",
           "gc,function-references,exceptions",
           "-S",
-          "cli,inherit-env,inherit-network,tcp"
+          "cli,inherit-env,inherit-network,tcp,udp,http,allow-ip-name-lookup"
         ),
         env = Map.empty
       )
