@@ -81,10 +81,10 @@ lazy val `scalajs-env-wasmtime` = project
       "com.novocode" % "junit-interface" % "0.11" % Test
     ),
     Compile / resourceGenerators += Def.task {
-      (`wasmtime-test-rpc-adapter` / Compile / fastLinkJS).value
+      (`wasmtime-test-rpc-adapter` / Compile / fullLinkJS).value
 
-      val fastSource = {
-        (`wasmtime-test-rpc-adapter` / Compile / fastLinkJS / scalaJSLinkerOutputDirectory).value /
+      val fullSource = {
+        (`wasmtime-test-rpc-adapter` / Compile / fullLinkJS / scalaJSLinkerOutputDirectory).value /
           "main.wasm"
       }
 
@@ -93,13 +93,11 @@ lazy val `scalajs-env-wasmtime` = project
           "org" / "scalajs" / "jsenv" / "wasmtime" / "test-rpc"
       }
       val defaultTarget = targetDir / "adapter.wasm"
-      val fastTarget = targetDir / "adapter-fastopt.wasm"
 
       IO.createDirectory(targetDir)
-      IO.copyFile(fastSource, fastTarget)
-      IO.copyFile(fastSource, defaultTarget)
+      IO.copyFile(fullSource, defaultTarget)
 
-      Seq(defaultTarget, fastTarget)
+      Seq(defaultTarget)
     }.taskValue
   )
 
@@ -121,7 +119,7 @@ lazy val `wasmtime-test-rpc-adapter` = project
         .withESFeatures(_.withESVersion(ESVersion.ES2022).withUseWebAssembly(true))
         .withModuleKind(ModuleKind.WasmComponent)
     },
-    Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "adapter-fastopt"
+    Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "adapter-opt"
   )
 
 lazy val `test-project` = project
@@ -151,18 +149,7 @@ lazy val `test-project` = project
           )
         )
     },
-    jsEnv := new org.scalajs.jsenv.wasmtime.WasmtimeEnv(
-      org.scalajs.jsenv.wasmtime.WasmtimeEnv
-        .Config()
-        .withArgs(
-          List(
-            "-W",
-            "gc,function-references,exceptions",
-            "-S",
-            "cli,inherit-env,inherit-network,tcp,udp,http,allow-ip-name-lookup"
-          )
-        )
-    ),
+    jsEnv := new org.scalajs.jsenv.wasmtime.WasmtimeEnv(),
     Compile / jsEnvInput := {
       (Compile / fastLinkJS).value
       val linkerOutputDir =
