@@ -66,6 +66,8 @@ lazy val `scalajs-env-wasmtime-input` = project
   .settings(
     commonSettings,
     name := "scalajs-env-wasmtime-input",
+    version := "0.1.0",
+    publish / skip := true,
     libraryDependencies +=
       "org.scala-js" %% "scalajs-js-envs" % "1.6.0"
   )
