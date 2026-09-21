@@ -67,6 +67,10 @@ lazy val `scalajs-env-wasmtime-input` = project
     commonSettings,
     name := "scalajs-env-wasmtime-input",
     version := "0.1.0",
+    // 0.1.0 is already on maven central and sbt-scalajs (wasm) uses it
+    // releasing new vesrion may cause eviction error
+    // even if the content is the same.
+    // publish this only when the content has really changed.
     publish / skip := true,
     libraryDependencies +=
       "org.scala-js" %% "scalajs-js-envs" % "1.6.0"
