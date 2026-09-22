@@ -36,8 +36,5 @@ jobs:
       - name: Test
         run: sbt +scalajs-env-wasmtime/test
 
-      - name: Run test-project demo
-        run: sbt +test-project/run
-
-      - name: Run test-project tests
-        run: sbt +test-project/test
+      - name: Scripted
+        run: sbt scripted-tests/scripted
