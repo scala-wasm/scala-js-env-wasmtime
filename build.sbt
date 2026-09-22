@@ -1,8 +1,5 @@
-import org.scalajs.ir.WitScope
 import org.scalajs.linker.interface.ESVersion
 import org.scalajs.linker.interface.ModuleKind
-import org.scalajs.linker.interface.WasmComponentModuleInitializerExport
-import org.scalajs.linker.interface.WasmComponentModuleInitializerExport._
 import org.scalajs.sbtplugin.ScalaJSPlugin
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
@@ -53,8 +50,7 @@ lazy val root = project
   .aggregate(
     `scalajs-env-wasmtime-input`,
     `scalajs-env-wasmtime`,
-    `wasmtime-test-rpc-adapter`,
-    `test-project`
+    `wasmtime-test-rpc-adapter`
   )
   .settings(
     scalacOptions ++= Seq("-deprecation", "-feature", "-Werror"),
@@ -107,6 +103,17 @@ lazy val `scalajs-env-wasmtime` = project
     }.taskValue
   )
 
+lazy val `scripted-tests` = project
+  .in(file("scripted-tests"))
+  .enablePlugins(ScriptedPlugin)
+  .settings(
+    scalaVersion := Scala212,
+    crossScalaVersions := Seq(Scala212),
+    publish / skip := true,
+    scriptedLaunchOpts += "-Dscalajs-env-wasmtime.version=" + version.value,
+    scriptedDependencies := (`scalajs-env-wasmtime` / publishLocal).value
+  )
+
 lazy val `wasmtime-test-rpc-adapter` = project
   .in(file("wasmtime-test-rpc-adapter"))
   .enablePlugins(ScalaJSPlugin)
@@ -126,42 +133,4 @@ lazy val `wasmtime-test-rpc-adapter` = project
         .withModuleKind(ModuleKind.WasmComponent)
     },
     Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "adapter-opt"
-  )
-
-lazy val `test-project` = project
-  .in(file("test-project"))
-  .enablePlugins(ScalaJSPlugin, ScalaJSJUnitPlugin)
-  .settings(
-    commonSettings,
-    publish / skip := true,
-    name := "scalajs-env-wasmtime-test-project",
-    crossScalaVersions := Seq(Scala212),
-    scalaJSUseMainModuleInitializer := true,
-    scalaJSWitDirectory := baseDirectory.value / "wit",
-    scalaJSWitWorld := Some("testproject"),
-    scalaJSLinkerConfig ~= { config =>
-      config
-        .withESFeatures(_.withESVersion(ESVersion.ES2022).withUseWebAssembly(true))
-        .withModuleKind(ModuleKind.WasmComponent)
-        .withWasmFeatures(
-          _.withModuleInitializerExport(
-            Some(
-              WasmComponentModuleInitializerExport(
-                scope = WitScope.Interface("wasi", "cli", "run", Some("0.2.0")),
-                functionName = "run",
-                resultType = ResultType.ResultUnitUnit
-              )
-            )
-          )
-        )
-    },
-    jsEnv := new org.scalajs.jsenv.wasmtime.WasmtimeEnv(),
-    Compile / jsEnvInput := {
-      (Compile / fastLinkJS).value
-      val linkerOutputDir =
-        (Compile / fastLinkJS / scalaJSLinkerOutputDirectory).value.toPath
-      Seq(
-        org.scalajs.jsenv.wasmtime.WasmtimeInput.WasmComponent(linkerOutputDir.resolve("main.wasm"))
-      )
-    }
   )
